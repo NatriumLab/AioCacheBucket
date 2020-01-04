@@ -125,6 +125,15 @@ class AioCacheBucket():
         yield from self.Body.keys()
 
     def __init__(self, scavenger=True, DefaultExpireDelta={}, LibraryLock=None):
+        self.DefaultExpireDelta = DefaultExpireDelta
+
+        # 设置锁
+        self.LibraryLock = LibraryLock or threading.RLock()
+        self.ScavengerLock = threading.Lock()
+
+        self.Body = {}
+        self.Expire_Datas = {}
+
         if scavenger:
             self.LocalLoop = asyncio.new_event_loop()
 
@@ -135,15 +144,6 @@ class AioCacheBucket():
 
             self.ScavengerThread = Thread(target=loop_runfunc, args=(self.LocalLoop, self.scavenger()))
             self.ScavengerThread.start()
-
-        self.DefaultExpireDelta = DefaultExpireDelta
-
-        # 设置锁
-        self.LibraryLock = LibraryLock or threading.RLock()
-        self.ScavengerLock = threading.Lock()
-
-        self.Body = {}
-        self.Expire_Datas = {}
 
 class AioMultiCacheBucket:
     """AioCacheBucket集群管理.
