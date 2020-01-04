@@ -15,12 +15,12 @@ print(bucket.get("message"))
 # 多实例:
 from AioCacheBucket import AioMultiCacheBucket
 
-multibuckets = AioMultiCacheBucket()
+multibuckets = AioMultiCacheBucket({})
 multibuckets.setup({
     "hello-world": {}
 })
 hello_world_bucket: AioCacheBucket = multibuckets.getBucket("hello-world")
-hello_world_bucket.set("message".encode("utf-8"), "sth.") # 除了值必须是hashable, 键则可以是任何PyObject.
+hello_world_bucket.set("message".encode("utf-8"), "sth.") # 除了键必须是hashable, 值则可以是任何PyObject.
 
 # 即时过期机制:
 from datetime import datetime as dt, timedelta as td

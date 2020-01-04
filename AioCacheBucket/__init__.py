@@ -52,10 +52,10 @@ class AioCacheBucket():
                 # print(len(self.Body), end=" ")
                 # sys.stdout.flush()
 
-                data_num = len(await self.getlib())
+                data_num = len(self.getlib())
                 if data_num == 0:
                     continue
-                original_keys = list((await self.getlib()).keys())
+                original_keys = list((self.getlib()).keys())
                 with self.LibraryLock:
                     result = random.choices(range(len(self.Expire_Datas)), k=math.ceil(data_num / 20))
                     result = reduce(lambda x, y: x if y in x else x + [y], [[], ] + result)
@@ -126,15 +126,15 @@ class AioCacheBucket():
 
     def __init__(self, scavenger=True, DefaultExpireDelta={}, LibraryLock=None):
         if scavenger:
-            self.local_loop = asyncio.new_event_loop()
+            self.LocalLoop = asyncio.new_event_loop()
 
             def loop_runfunc(loop, coro):
                 asyncio.set_event_loop(loop)
                 loop.create_task(coro)
                 loop.run_forever()
 
-            self.scavenger_thread = Thread(target=loop_runfunc, args=(self.local_loop, self.scavenger()))
-            self.scavenger_thread.start()
+            self.ScavengerThread = Thread(target=loop_runfunc, args=(self.LocalLoop, self.scavenger()))
+            self.ScavengerThread.start()
 
         self.DefaultExpireDelta = DefaultExpireDelta
 
@@ -250,8 +250,7 @@ class AioMultiCacheBucket:
             }
             self.ScavengerLocks[key] = asyncio.Lock()
             self.BucketsLocks[key] = threading.RLock()
-            self.Buckets[key] = AioCacheBucket(
-                self.RequireApp, **result, scavenger=False, LibraryLock=self.BucketsLocks[key],
+            self.Buckets[key] = AioCacheBucket(**result, scavenger=False, LibraryLock=self.BucketsLocks[key],
             )
 
     def getBucket(self, bucket_name):
